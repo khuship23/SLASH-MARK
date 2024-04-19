@@ -1,51 +1,65 @@
 import random
+import tkinter as tk
+from tkinter import messagebox
 
-def generate_password(length):
-    characters = "abcdefghijklmnopqrstuvwxyz"
-    password = ""
+def generatePassword(pwlength):
+    alphabet = "abcdefghijklmnopqrstuvwxyz"
+    passwords = [] 
+    for length in pwlength:
+        password = "" 
+        for _ in range(length):
+            next_letter_index = random.randrange(len(alphabet))
+            password += alphabet[next_letter_index]
+        password = replaceWithNumber(password)
+        password = replaceWithUppercaseLetter(password)
+        passwords.append(password) 
+    return passwords
 
-    for i in range(length):
-        next_char_index = random.randrange(len(characters))
-        password += characters[next_char_index]
+def replaceWithNumber(pword):
+    for _ in range(random.randrange(1, 3)):
+        replace_index = random.randrange(len(pword)//2)
+        pword = pword[:replace_index] + str(random.randrange(10)) + pword[replace_index+1:]
+    return pword
 
-    password = add_digit(password)
-    password = add_capital_letter(password)
+def replaceWithUppercaseLetter(pword):
+    for _ in range(random.randrange(1, 3)):
+        replace_index = random.randrange(len(pword)//2, len(pword))
+        pword = pword[:replace_index] + pword[replace_index].upper() + pword[replace_index+1:]
+    return pword
 
-    return password
+def generate_passwords():
+    try:
+        numPasswords = int(entry_num_passwords.get())
+        passwordLengths = [int(length) if int(length) >= 3 else 3 for length in entry_password_lengths.get().split(",")]
 
-def add_digit(word):
-    for i in range(random.randrange(1, 3)):
-        replace_index = random.randrange(len(word)//2)
-        word = word[0:replace_index] + str(random.randrange(10)) + word[replace_index+1:]
-    return word
+        passwords = generatePassword(passwordLengths)
 
-def add_capital_letter(word):
-    for i in range(random.randrange(1, 3)):
-        replace_index = random.randrange(len(word)//2, len(word))
-        word = word[0:replace_index] + word[replace_index].upper() + word[replace_index+1:]
-    return word
+        result_text.delete(1.0, tk.END)
+        for i, password in enumerate(passwords):
+            result_text.insert(tk.END, f"Password #{i+1}: {password}\n")
 
-def main():
-    num_passwords = int(input("How many passwords do you want to generate? "))
-    print("Generating " + str(num_passwords) + " passwords")
+    except ValueError:
+        messagebox.showerror("Error", "Please enter valid input")
 
-    password_lengths = []
+root = tk.Tk()
+root.title("Password Generator")
 
-    print("Minimum password length is 3")
+label_num_passwords = tk.Label(root, text="How many passwords do you want to generate?")
+label_num_passwords.pack()
 
-    for i in range(num_passwords):
-        length = int(input("How long should Password #" + str(i+1) + " be? "))
-        if length < 3:
-            length = 3
-        password_lengths.append(length)
+entry_num_passwords = tk.Entry(root)
+entry_num_passwords.pack()
 
-    passwords = []
+label_password_lengths = tk.Label(root, text="Enter the length(s) of password(s) separated by comma (,)")
+label_password_lengths.pack()
 
-    for length in password_lengths:
-        passwords.append(generate_password(length))
+entry_password_lengths = tk.Entry(root)
+entry_password_lengths.pack()
 
-    for i, password in enumerate(passwords):
-        print("Password #" + str(i+1) + " is " + password)
+generate_button = tk.Button(root, text="Generate Passwords", command=generate_passwords)
+generate_button.pack()
 
-if __name__ == "__main__":
-    main()
+result_text = tk.Text(root, height=10, width=50)
+result_text.pack()
+
+root.mainloop()
